@@ -5,16 +5,42 @@
 ####################################################################################################
 
 
+XBMC_HOST='127.0.0.1'
+XBMC_PORT='8080'
+XBMC_USER='xbmc'
+XBMC_PASSWORD='xbmc'
+
+
 # if you wanna use this script with an vdr-server not running on localhost,
 # you have to allow svdrp in your vdr settings (at least for the ip address of this xbmc client).
 #
 # 127.0.0.1 should be allowed by default
 
-
 VDR_HOST='127.0.0.1'
 VDR_PORT='6419'
 MINUTES_TO_WAIT_FOR_NEXT_TIMER=15
 
+
+
+BIN_DIRNAME='/usr/bin/dirname'
+BIN_WHO='/usr/bin/who'
+BIN_WC='/usr/bin/wc'
+
+
+if ! [[ -x $BIN_DIRNAME ]]; then
+  echo "ERROR: $BIN_DIRNAME can not be executed!"
+  exit 0
+fi
+
+
+PATH_HOOKS_ENABLED=$($BIN_DIRNAME $0)
+BIN_MSG=$PATH_HOOKS_ENABLED'/../bin/sendMSGtoXBMC'
+
+
+if ! [[ -x $BIN_MSG ]]; then
+  echo "ERROR: $BIN_MSG can not be executed!"
+  exit 0
+fi
 
 
 BIN_NETCAT='/bin/netcat'
@@ -26,22 +52,35 @@ SECONDS_TO_WAIT_FOR_NEXT_TIMER=$(( $MINUTES_TO_WAIT_FOR_NEXT_TIMER * 60 ))
 
 
 if ! [[ -x $BIN_NETCAT ]]; then
-  echo "ERROR: $BIN_NETCAT can not be executed!"
+  MSG="ERROR: $BIN_NETCAT can not be executed!"
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
   exit 1
 fi
 
 if ! [[ -x $BIN_AWK ]]; then
-  echo "ERROR: $BIN_AWK can not be executed!"
+  echo ""
+  MSG="ERROR: $BIN_AWK can not be executed!"
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
   exit 1
 fi
 
 if ! [[ -x $BIN_TR ]]; then
-  echo "ERROR: $BIN_TR can not be executed!"
+  MSG="ERROR: $BIN_TR can not be executed!"
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
   exit 1
 fi
 
 if ! [[ -x $BIN_EGREP ]]; then
-  echo "ERROR: $BIN_EGREP can not be executed!"
+  MSG="ERROR: $BIN_EGREP can not be executed!"
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
   exit 1
 fi
 
@@ -50,7 +89,11 @@ SECONDS_UNTIL_NEXT_TIMER=`echo -e "NEXT rel\nQUIT" | $BIN_NETCAT $VDR_HOST $VDR_
 
 if ! [ $SECONDS_UNTIL_NEXT_TIMER ]; then
 
-  echo "ERROR: the cmd for requesting the seconds until the next vdr timer starts, wasn't successfull."
+  MSG="ERROR: the cmd for requesting the seconds until the next vdr timer starts, wasn't successfull."
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+
   exit 1
 
 fi
@@ -58,17 +101,29 @@ fi
 
 if [ `echo $SECONDS_UNTIL_NEXT_TIMER | $BIN_EGREP '^-'` ]; then
 
-  echo "shutdown will be canceled, because vdr is recording right now."
+  MSG="shutdown will be canceled, because vdr is recording right now."
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+
   exit 1
 
 elif [ $SECONDS_UNTIL_NEXT_TIMER -lt $SECONDS_TO_WAIT_FOR_NEXT_TIMER ]; then
 
-  echo "shutdown will be canceled, because the next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds."
+  MSG="shutdown will be canceled, because the next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds."
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+
   exit 1
 
 else
 
-  echo "next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds. this takes too long to wait for it. maximum amount of seconds to wait for the next timer is $SECONDS_TO_WAIT_FOR_NEXT_TIMER"
+  MSG="next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds. this takes too long to wait for it. maximum amount of seconds to wait for the next timer is $SECONDS_TO_WAIT_FOR_NEXT_TIMER"
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+
   exit 0
 
 fi
