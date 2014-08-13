@@ -22,9 +22,14 @@ MINUTES_TO_WAIT_FOR_NEXT_TIMER=15
 
 
 
+SECONDS_TO_WAIT_FOR_NEXT_TIMER=$(( $MINUTES_TO_WAIT_FOR_NEXT_TIMER * 60 ))
+
+
 BIN_DIRNAME='/usr/bin/dirname'
-BIN_WHO='/usr/bin/who'
-BIN_WC='/usr/bin/wc'
+BIN_NETCAT='/bin/netcat'
+BIN_AWK='/usr/bin/awk'
+BIN_TR='/usr/bin/tr'
+BIN_EGREP='/bin/egrep'
 
 
 if ! [[ -x $BIN_DIRNAME ]]; then
@@ -41,15 +46,6 @@ if ! [[ -x $BIN_MSG ]]; then
   echo "ERROR: $BIN_MSG can not be executed!"
   exit 0
 fi
-
-
-BIN_NETCAT='/bin/netcat'
-BIN_AWK='/usr/bin/awk'
-BIN_TR='/usr/bin/tr'
-BIN_EGREP='/bin/egrep'
-
-SECONDS_TO_WAIT_FOR_NEXT_TIMER=$(( $MINUTES_TO_WAIT_FOR_NEXT_TIMER * 60 ))
-
 
 if ! [[ -x $BIN_NETCAT ]]; then
   MSG="ERROR: $BIN_NETCAT can not be executed!"
