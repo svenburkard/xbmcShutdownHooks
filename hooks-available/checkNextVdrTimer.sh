@@ -81,7 +81,7 @@ if ! [[ -x $BIN_EGREP ]]; then
 fi
 
 
-NO_FUTURE_TIMERS=`echo -e "NEXT rel\nQUIT" | $BIN_NETCAT $VDR_HOST $VDR_PORT | /usr/bin/awk '/^550/ { print }' | $BIN_EGREP 'No active timers'`
+NO_FUTURE_TIMERS=`echo -e "NEXT rel\nQUIT" | $BIN_NETCAT $VDR_HOST $VDR_PORT | $BIN_AWK '/^550/ { print }' | $BIN_EGREP 'No active timers'`
 
 if [ -n "$NO_FUTURE_TIMERS" ]; then
 
