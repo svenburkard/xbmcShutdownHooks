@@ -51,7 +51,7 @@ if ! [[ -x $BIN_NETCAT ]]; then
   MSG="ERROR: $BIN_NETCAT can not be executed!"
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
   exit 1
 fi
 
@@ -60,7 +60,7 @@ if ! [[ -x $BIN_AWK ]]; then
   MSG="ERROR: $BIN_AWK can not be executed!"
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
   exit 1
 fi
 
@@ -68,7 +68,7 @@ if ! [[ -x $BIN_TR ]]; then
   MSG="ERROR: $BIN_TR can not be executed!"
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
   exit 1
 fi
 
@@ -76,19 +76,32 @@ if ! [[ -x $BIN_EGREP ]]; then
   MSG="ERROR: $BIN_EGREP can not be executed!"
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
   exit 1
 fi
 
 
+NO_FUTURE_TIMERS=`echo -e "NEXT rel\nQUIT" | $BIN_NETCAT $VDR_HOST $VDR_PORT | /usr/bin/awk '/^550/ { print }' | $BIN_EGREP 'No active timers'`
+
+if [ -n "$NO_FUTURE_TIMERS" ]; then
+
+  MSG="there are no timers in the future."
+
+  echo $MSG
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
+
+  exit 0
+
+fi
+
 SECONDS_UNTIL_NEXT_TIMER=`echo -e "NEXT rel\nQUIT" | $BIN_NETCAT $VDR_HOST $VDR_PORT | $BIN_AWK '/^250/ { print $3 }' | $BIN_TR -d '\r' | $BIN_EGREP '^-?[0-9]+$'`
 
-if ! [ $SECONDS_UNTIL_NEXT_TIMER ]; then
+if ! [ -n "$SECONDS_UNTIL_NEXT_TIMER" ]; then
 
   MSG="ERROR: the cmd for requesting the seconds until the next vdr timer starts, wasn't successfull."
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
 
   exit 1
 
@@ -100,7 +113,7 @@ if [ `echo $SECONDS_UNTIL_NEXT_TIMER | $BIN_EGREP '^-'` ]; then
   MSG="shutdown will be canceled, because vdr is recording right now."
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
 
   exit 1
 
@@ -109,7 +122,7 @@ elif [ $SECONDS_UNTIL_NEXT_TIMER -lt $SECONDS_TO_WAIT_FOR_NEXT_TIMER ]; then
   MSG="shutdown will be canceled, because the next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds."
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
 
   exit 1
 
@@ -118,7 +131,7 @@ else
   MSG="next vdr timer is in $SECONDS_UNTIL_NEXT_TIMER seconds. this takes too long to wait for it. maximum amount of seconds to wait for the next timer is $SECONDS_TO_WAIT_FOR_NEXT_TIMER"
 
   echo $MSG
-  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkActiveLogins.sh:" "$MSG"
+  $BIN_MSG $XBMC_HOST $XBMC_PORT $XBMC_USER $XBMC_PASSWORD "checkNextVdrTimer.sh:" "$MSG"
 
   exit 0
 
